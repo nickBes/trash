@@ -7,11 +7,13 @@ public class PlayerMovement : MonoBehaviour {
     public float[] jump;
     public float legOffset;
     public float legLength;
+    public float handsLength;
     public float animSensetivity;
 
     Animator animator;
     Rigidbody2D rb;
     bool onGround;
+    bool onWall;
     int jumpsLeft;
     void Start(){
         rb = GetComponent<Rigidbody2D>();
@@ -20,6 +22,15 @@ public class PlayerMovement : MonoBehaviour {
     void FixedUpdate(){
         movement();
         jumping();
+        print(rb.velocity);
+        bool touchingWall = Physics2D.Raycast(transform.position, Vector3.left, handsLength, LayerMask.GetMask("Ground")) ||
+                            Physics2D.Raycast(transform.position, Vector3.right, handsLength, LayerMask.GetMask("ground"));
+        if(touchingWall && rb.velocity.y == 0) {
+            onWall = true;
+        } else {
+            onWall = false;
+        }
+        animator.SetBool("OnWall", onWall);
     }
     void jumping() {
         onGround = Physics2D.Raycast(transform.position + (Vector3.left * legOffset), Vector2.down, legLength, LayerMask.GetMask("Ground")) ||
@@ -60,5 +71,10 @@ public class PlayerMovement : MonoBehaviour {
         //right leg
         Gizmos.DrawLine(transform.position + (Vector3.right * legOffset),
                 transform.position + (Vector3.right * legOffset) + (Vector3.down * legLength));
+        //left hand
+        Gizmos.DrawLine(transform.position, transform.position + (Vector3.left * handsLength));
+        //right hand
+        Gizmos.DrawLine(transform.position, transform.position + (Vector3.right * handsLength));
+
     }
 }
