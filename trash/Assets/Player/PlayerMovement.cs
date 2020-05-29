@@ -5,43 +5,91 @@ using UnityEngine;
 public class PlayerMovement : MonoBehaviour {
     public float speed;
     public float[] jump;
+    public float animSensetivity;
+
+    [Header("Legs")]
     public float legOffset;
     public float legLength;
-    public float handsLength;
-    public float animSensetivity;
+
+    [Header("Hands")]
+    public GameObject hand;
+    public float handSize;
+    public float handOffsetL;
+    public float handOffsetR;
+
+    [Header("Wall")]
+    public bool onWallLeft;
+    public bool onWallRight;
+    public float wallFallSpeed;
 
     Animator animator;
     Rigidbody2D rb;
     bool onGround;
+    bool moving;
     bool onWall;
     int jumpsLeft;
+    int previousWall;
     void Start(){
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
+        createHands();
     }
     void FixedUpdate(){
         movement();
+        wallJump();
         jumping();
-        print(rb.velocity);
-        bool touchingWall = Physics2D.Raycast(transform.position, Vector3.left, handsLength, LayerMask.GetMask("Ground")) ||
-                            Physics2D.Raycast(transform.position, Vector3.right, handsLength, LayerMask.GetMask("ground"));
-        if(touchingWall && rb.velocity.y == 0) {
-            onWall = true;
+        animator.SetBool("Moving", moving);
+        animator.SetBool("OnWall", onWall);
+    }
+    void createHands() {
+        GameObject leftHand = Instantiate(hand, transform.position + (Vector3.left * handOffsetL), Quaternion.identity, transform);
+        leftHand.GetComponent<BoxCollider2D>().size = Vector2.one * handSize;
+        GameObject rightHand = Instantiate(hand, transform.position + (Vector3.right * handOffsetR), Quaternion.identity, transform);
+        rightHand.GetComponent<BoxCollider2D>().size = Vector2.one * handSize;
+    }
+    void wallJump() {
+        //wall jump
+        if (onWallLeft) {
+            if(previousWall == 1 && jumpsLeft < 1) {
+                jumpsLeft = 1;
+            }
+            previousWall = 0;
+        }else if (onWallRight) {
+            if (previousWall == 0 && jumpsLeft < 1) {
+                jumpsLeft = 1;
+            }
+            previousWall = 1;
+        }
+        onWall = onWallLeft || onWallRight;
+        if (Mathf.Abs(rb.velocity.x / speed) >= animSensetivity) {
+            if (onWall) {
+                moving = false;
+
+                if (rb.velocity.y == 0) {
+                    rb.velocity = new Vector2(rb.velocity.x, -wallFallSpeed);
+                }
+            } else {
+                moving = true;
+            }
         } else {
+            moving = false;
             onWall = false;
         }
-        animator.SetBool("OnWall", onWall);
     }
     void jumping() {
         onGround = Physics2D.Raycast(transform.position + (Vector3.left * legOffset), Vector2.down, legLength, LayerMask.GetMask("Ground")) ||
-           Physics2D.Raycast(transform.position + (Vector3.right * legOffset), Vector2.down, legLength, LayerMask.GetMask("Ground"));
+                   Physics2D.Raycast(transform.position + (Vector3.right * legOffset), Vector2.down, legLength, LayerMask.GetMask("Ground"));
         if (onGround) {
             jumpsLeft = jump.Length;
         }
         if (Input.GetKeyDown(KeyCode.Space) && jumpsLeft > 0) {
             float jumpStrength = jump[jumpsLeft - 1];
             rb.velocity = Vector2.up * jumpStrength;
-            jumpsLeft--;
+            if (onWallLeft) {
+                jumpsLeft = 1;
+            } else {
+                jumpsLeft--;
+            }
         }
     }
     void movement() {
@@ -53,15 +101,6 @@ public class PlayerMovement : MonoBehaviour {
         } else if(direction < 0){
             transform.rotation = Quaternion.Euler(Vector3.up * 180);
         }
-
-        bool moving; 
-        if(Mathf.Abs(direction) >= animSensetivity) {
-            moving = true;
-        } else {
-            moving = false;
-        }
-
-        animator.SetBool("Moving", moving);
     }
     void OnDrawGizmos() {
         Gizmos.color = Color.magenta;
@@ -70,11 +109,10 @@ public class PlayerMovement : MonoBehaviour {
                         transform.position + (Vector3.left * legOffset) + (Vector3.down * legLength));
         //right leg
         Gizmos.DrawLine(transform.position + (Vector3.right * legOffset),
-                transform.position + (Vector3.right * legOffset) + (Vector3.down * legLength));
+                        transform.position + (Vector3.right * legOffset) + (Vector3.down * legLength));
         //left hand
-        Gizmos.DrawLine(transform.position, transform.position + (Vector3.left * handsLength));
+        Gizmos.DrawLine(transform.position, transform.position + (Vector3.left * handOffsetL) + (Vector3.left * handSize / 2));
         //right hand
-        Gizmos.DrawLine(transform.position, transform.position + (Vector3.right * handsLength));
-
+        Gizmos.DrawLine(transform.position, transform.position + (Vector3.right * handOffsetR) + (Vector3.right * handSize / 2));
     }
 }
