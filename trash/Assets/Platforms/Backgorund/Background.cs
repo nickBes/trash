@@ -1,0 +1,45 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class Background : MonoBehaviour{
+    public GameObject platformSprite;
+    public Sprite sprite;
+    public int xUnits = 3;
+    public int yUnits = 3;
+    Vector2 spriteSize { get { return sprite.bounds.size; } }
+    Vector2 platformSize { get { return new Vector2(spriteSize.x * xUnits, spriteSize.y * yUnits); } }
+
+    void Start() {
+        //it would start spawning the sprites from top left
+        float xPos = spriteSize.x / 2 - platformSize.x / 2;
+        float yPos = platformSize.y / 2 - spriteSize.y / 2;
+
+        for (int i = 0; i < yUnits; i++) {
+            for (int t = 0; t < xUnits; t++) {
+                GameObject temp = Instantiate(platformSprite,
+                                              new Vector2(xPos + transform.position.x, yPos + transform.position.y),
+                                              Quaternion.identity,
+                                              transform);
+                xPos += spriteSize.x;
+                temp.GetComponent<SpriteRenderer>().sprite = sprite;
+            }
+            xPos = spriteSize.x / 2 - platformSize.x / 2;
+            yPos -= spriteSize.y;
+        }
+    }
+
+    void OnDrawGizmos() {
+        Gizmos.color = Color.cyan;
+
+        Vector2 topLeft = new Vector2(transform.position.x - platformSize.x / 2, transform.position.y + platformSize.y / 2);
+        Vector2 topRight = new Vector2(transform.position.x + platformSize.x / 2, transform.position.y + platformSize.y / 2);
+        Vector2 bottomLeft = new Vector2(transform.position.x - platformSize.x / 2, transform.position.y - platformSize.y / 2);
+        Vector2 bottomRight = new Vector2(transform.position.x + platformSize.x / 2, transform.position.y - platformSize.y / 2);
+
+        Gizmos.DrawLine(topLeft, bottomLeft);
+        Gizmos.DrawLine(topRight, bottomRight);
+        Gizmos.DrawLine(topLeft, topRight);
+        Gizmos.DrawLine(bottomLeft, bottomRight);
+    }
+}

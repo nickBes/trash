@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class PlayerFollow : MonoBehaviour{
     public Transform target;
@@ -10,7 +8,9 @@ public class PlayerFollow : MonoBehaviour{
         transform.position = target.position + offset;
     }
     void FixedUpdate(){
-        Vector3 progress = Vector3.Lerp(transform.position, target.position + offset, smooth);
-        transform.position = progress;
+        if(target != null) {
+            Vector3 progress = Vector3.Lerp(transform.position, target.position + offset, smooth);
+            transform.position = progress;
+        }
     }
 }
