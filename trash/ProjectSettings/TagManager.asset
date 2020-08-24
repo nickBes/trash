@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Ground
   - Bounce
+  - HealthBar
   layers:
   - Default
   - TransparentFX

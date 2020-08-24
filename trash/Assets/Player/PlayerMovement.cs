@@ -3,13 +3,13 @@
 public class PlayerMovement : MonoBehaviour {
     [Header("Behaviour")]
     public float maxHealth;
-    public HealthBar healthBar;
+    HealthBar healthBar;
     float health;
     public bool dead;
     public float speed;
     public float jumpSpeed;
     public Vector2 knockbackSpeed;
-    public float knockback;
+     float knockback;
     public float damage;
     public float reloadHeight;
     Rigidbody2D rb;
@@ -41,6 +41,7 @@ public class PlayerMovement : MonoBehaviour {
     void Start(){
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
+        healthBar = GameObject.FindGameObjectWithTag("HealthBar").GetComponent<HealthBar>();
         health = maxHealth;
         healthBar.setMaxHealth(maxHealth);
     }
@@ -63,10 +64,10 @@ public class PlayerMovement : MonoBehaviour {
         }else{
             onWall = Physics2D.BoxCast(transform.position + (Vector3.up * handsOffset.y), handSize, 0, Vector2.left, handsOffset.x, LayerMask.GetMask("Ground", "Bounce"));
         }
+        //wall-slide
         if (onWall && !onGround) {
             rb.velocity = new Vector2(rb.velocity.x, -wallSlideSpeed);
         }
-        print(onWall);
         //jump
         if (Input.GetKeyDown(KeyCode.Space) && onGround && !finished) {
             rb.velocity = new Vector2(rb.velocity.x, jumpSpeed);
@@ -98,7 +99,7 @@ public class PlayerMovement : MonoBehaviour {
         if (!finished) {
             direction = Input.GetAxis("Horizontal");
             rb.velocity = new Vector2((direction * speed) + knockback, rb.velocity.y);
-            //Rotate the game object around the y axis when going to left or right
+            //Rotate the game object around the y axis when going left or right
             if (direction > 0) {
                 transform.rotation = Quaternion.Euler(Vector3.zero);
                 facingRight = true;
@@ -109,7 +110,6 @@ public class PlayerMovement : MonoBehaviour {
             knockback = 0;
         } else {
             rb.velocity = rb.velocity / 2;
-            knockback = 0;
             direction = 0;
         }
     }

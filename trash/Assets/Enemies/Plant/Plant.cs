@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-
 public class Plant : MonoBehaviour{
     public GameObject plantBullet;
     Animator animator;
